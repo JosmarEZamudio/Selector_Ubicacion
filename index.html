@@ -53,6 +53,10 @@
             }
         ).addTo(mapa);
 
+        capaMapa.on('tileload', function(evento) {
+            evento.tile.style.transform = 'translateZ(0)';
+        });
+
         // Mostrar el diagnóstico en el título de la página
         function actualizarDiagnostico() {
             document.title =
