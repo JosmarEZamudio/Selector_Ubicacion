@@ -119,6 +119,13 @@
 
             // Más adelante conectaremos estos valores con Java.
         });
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                mapa.invalidateSize(true);
+                mapa.setZoom(mapa.getZoom());
+            }, 1000);
+        });
     </script>
 </body>
 </html>
