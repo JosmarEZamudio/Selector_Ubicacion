@@ -74,6 +74,12 @@
             actualizarDiagnostico();
         });
 
+        // Recalcular el mapa cuando termina de cargar la capa inicial
+        capaMapa.once('load', function() {
+            setTimeout(() => {
+                mapa.invalidateSize(true);
+            }, 1000);
+        });
         // Marcador seleccionado
         let marcador = null;
 
