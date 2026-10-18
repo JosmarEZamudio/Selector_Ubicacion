@@ -17,6 +17,7 @@
             width: 100%;
             height: 100%;
             margin: 0;
+            padding: 0;
         }
     </style>
 </head>
@@ -29,29 +30,64 @@
     <script>
         // Vista inicial: Monterrey
         const mapa = L.map('mapa').setView(
-            [25.6866, -100.3161], 15);
+            [25.6866, -100.3161], 15
+        );
 
-        
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            referrerPolicy: 'strict-origin-when-cross-origin'
-        }).addTo(mapa);
+        // Contadores para diagnosticar la carga de los mosaicos
+        let mosaicosCargados = 0;
+        let mosaicosFallidos = 0;
 
+        // Capa de OpenStreetMap
+        const capaMapa = L.tileLayer(
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                maxZoom: 19,
+                attribution:
+                    '&copy; <a href="https://www.openstreetmap.org/copyright">' +
+                    'OpenStreetMap</a> contributors',
+                referrerPolicy: 'strict-origin-when-cross-origin'
+            }
+        ).addTo(mapa);
 
+        // Mostrar el diagnóstico en el título de la página
+        function actualizarDiagnostico() {
+            document.title =
+                'Cargados: ' + mosaicosCargados +
+                ' | Fallidos: ' + mosaicosFallidos;
+        }
+
+        // Registrar mosaicos cargados correctamente
+        capaMapa.on('tileload', function() {
+            mosaicosCargados++;
+            actualizarDiagnostico();
+        });
+
+        // Registrar errores de carga
+        capaMapa.on('tileerror', function(evento) {
+            mosaicosFallidos++;
+
+            console.error(
+                'Error cargando mosaico:',
+                evento.tile.src
+            );
+
+            actualizarDiagnostico();
+        });
+
+        // Marcador seleccionado
         let marcador = null;
-        //Corregir tamaño del mapa
-        // Recalcular el tamaño del mapa cuando termina de mostrarse
+
+        // Recalcular el tamaño inicial del mapa
         setTimeout(() => {
             mapa.invalidateSize(true);
         }, 500);
 
-        // Volver a calcularlo si cambia el tamaño del contenedor
+        // Recalcular cuando cambie el tamaño del navegador
         window.addEventListener('resize', () => {
             mapa.invalidateSize(true);
         });
 
-        // Seleccionar un punto haciendo clic
+        // Seleccionar una ubicación haciendo clic
         mapa.on('click', function(evento) {
             const latitud = evento.latlng.lat;
             const longitud = evento.latlng.lng;
@@ -72,3 +108,4 @@
     </script>
 </body>
 </html>
+
