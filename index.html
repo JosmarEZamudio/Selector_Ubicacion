@@ -31,13 +31,13 @@
         const mapa = L.map('mapa').setView(
             [25.6866, -100.3161], 15);
 
-        L.tileLayer(
-            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap'
-            }
-        ).addTo(mapa);
+        
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            referrerPolicy: 'strict-origin-when-cross-origin'
+        }).addTo(mapa);
+
 
         let marcador = null;
         //Corregir tamaño del mapa
