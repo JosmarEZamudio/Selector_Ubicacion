@@ -168,6 +168,10 @@
                 'Latitud: ' + latitud.toFixed(6) +
                 '<br>Longitud: ' + longitud.toFixed(6)
             ).openPopup();
+
+            if (window.javaBridgeReceptor) {
+                window.javaBridgeReceptor.recibirCoordenadas(latitud, longitud);
+            }
         });
 
         // Obtener ubicación actual sin confirmaciones propias
@@ -267,6 +271,10 @@
                     marcador.setLatLng([latitud, longitud]);
                 } else {
                     marcador = L.marker([latitud, longitud]).addTo(mapa);
+                }
+
+               if (window.javaBridgeReceptor) {
+                    window.javaBridgeReceptor.recibirCoordenadas(latitud, longitud);
                 }
             }
     </script>
