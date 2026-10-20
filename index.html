@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -11,6 +11,7 @@
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
     />
+
     <style>
         html, body {
             width: 100%;
@@ -19,31 +20,48 @@
             padding: 0;
             overflow: hidden;
         }
-    
+
         #mapa {
             position: absolute;
             inset: 0;
             background: #e5e5e5;
         }
+
+        #btnUbicacion {
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            z-index: 1000;
+            padding: 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
+
     <div id="mapa"></div>
+
+    <button id="btnUbicacion" onclick="obtenerUbicacion()">
+        Usar mi ubicación actual
+    </button>
 
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
     <script>
         // Vista inicial: Monterrey
-       const mapa = L.map('mapa', {
+        const mapa = L.map('mapa', {
             zoomAnimation: false,
             fadeAnimation: false,
             markerZoomAnimation: false
         }).setView([25.6866, -100.3161], 15);
 
-        // Contadores para diagnosticar la carga de los mosaicos
+        // Contadores para diagnosticar la carga de mosaicos
         let mosaicosCargados = 0;
         let mosaicosFallidos = 0;
+
+        // Marcador seleccionado
+        let marcador = null;
 
         // Capa de OpenStreetMap
         const capaMapa = L.tileLayer(
@@ -59,7 +77,7 @@
             }
         ).addTo(mapa);
 
-        // Mostrar el diagnóstico en el título de la página
+        // Mostrar diagnóstico en el título de la página
         function actualizarDiagnostico() {
             document.title =
                 'Cargados: ' + mosaicosCargados +
@@ -84,26 +102,24 @@
             actualizarDiagnostico();
         });
 
-        // Recalcular el mapa cuando termina de cargar la capa inicial
+        // Recalcular el tamaño al terminar la carga inicial
         capaMapa.once('load', function() {
             setTimeout(() => {
                 mapa.invalidateSize(true);
             }, 1000);
         });
-        // Marcador seleccionado
-        let marcador = null;
 
-        // Recalcular el tamaño inicial del mapa
+        // Recalcular el tamaño inicial
         setTimeout(() => {
             mapa.invalidateSize(true);
         }, 500);
 
-        // Recalcular cuando cambie el tamaño del navegador
+        // Recalcular cuando cambie el tamaño de la ventana
         window.addEventListener('resize', () => {
             mapa.invalidateSize(true);
         });
 
-        // Seleccionar una ubicación haciendo clic
+        // Seleccionar ubicación haciendo clic en el mapa
         mapa.on('click', function(evento) {
             const latitud = evento.latlng.lat;
             const longitud = evento.latlng.lng;
@@ -122,44 +138,76 @@
             // Más adelante conectaremos estos valores con Java.
         });
 
+        // Obtener la ubicación actual del dispositivo
+        function obtenerUbicacion() {
+            if (!navigator.geolocation) {
+                alert(
+                    'La geolocalización no está disponible en este navegador.'
+                );
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function(posicion) {
+                    const lat = posicion.coords.latitude;
+                    const lon = posicion.coords.longitude;
+
+                    // Centrar el mapa en la ubicación obtenida
+                    mapa.setView([lat, lon], 16);
+
+                    // Crear o actualizar el marcador existente
+                    if (marcador !== null) {
+                        marcador.setLatLng([lat, lon]);
+                    } else {
+                        marcador = L.marker([lat, lon]).addTo(mapa);
+                    }
+
+                    // Mostrar coordenadas
+                    marcador.bindPopup(
+                        'Mi ubicación actual<br>' +
+                        'Latitud: ' + lat.toFixed(6) +
+                        '<br>Longitud: ' + lon.toFixed(6)
+                    ).openPopup();
+
+                    // Recalcular el tamaño después de centrar
+                    setTimeout(() => {
+                        mapa.invalidateSize(true);
+                    }, 500);
+                },
+
+                function(error) {
+                    let mensaje;
+
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            mensaje = 'Se denegó el permiso de ubicación.';
+                            break;
+
+                        case error.POSITION_UNAVAILABLE:
+                            mensaje = 'No se pudo determinar la ubicación.';
+                            break;
+
+                        case error.TIMEOUT:
+                            mensaje = 'Se agotó el tiempo para obtener la ubicación.';
+                            break;
+
+                        default:
+                            mensaje = 'Ocurrió un error al obtener la ubicación.';
+                    }
+
+                    alert(mensaje);
+                    console.error('Error de geolocalización:', error);
+                },
+
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
     </script>
 
-    <button onclick="obtenerUbicacion()">
-    Usar mi ubicación actual
-</button>
-
-<script>
-function obtenerUbicacion() {
-    if (!navigator.geolocation) {
-        alert("La geolocalización no está disponible.");
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-        function(posicion) {
-            const lat = posicion.coords.latitude;
-            const lon = posicion.coords.longitude;
-
-            map.setView([lat, lon], 16);
-
-            L.marker([lat, lon])
-                .addTo(map)
-                .bindPopup(
-                    "Mi ubicación<br>" +
-                    "Latitud: " + lat + "<br>" +
-                    "Longitud: " + lon
-                )
-                .openPopup();
-        },
-        function(error) {
-            alert("No se pudo obtener la ubicación: " + error.message);
-        },
-        {
-            enableHighAccuracy: true,
-            timeout: 10000
-        }
-    );
-}
-</script>
 </body>
 </html>
+```
