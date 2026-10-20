@@ -140,12 +140,8 @@
 
         // Obtener la ubicación actual del dispositivo
         function obtenerUbicacion() {
-              alert("El botón sí funciona");
-
-                if (!navigator.geolocation) {
-                    alert("La geolocalización no está disponible.");
-                    return;
-                }
+            alert("Geolocation: " + !!navigator.geolocation);
+            alert("Secure context: " + window.isSecureContext);
                         
             if (!navigator.geolocation) {
                 alert(
