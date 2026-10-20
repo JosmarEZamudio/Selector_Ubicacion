@@ -35,6 +35,24 @@
             padding: 10px;
             cursor: pointer;
         }
+
+        #mensaje {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            background: white;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-family: Arial, sans-serif;
+            text-align: center;
+            max-width: 80%;
+            overflow-wrap: anywhere;
+        }
     </style>
 </head>
 
@@ -43,15 +61,22 @@
     <div id="mapa"></div>
 
     <button id="btnUbicacion" onclick="obtenerUbicacion()">
-         id="btnUbicacion"
-        onclick="alert('El boton recibe el clic')"
-        style="position:absolute; top:10px; left:50px; z-index:10000;">
-        Probar botón
+        Usar mi ubicación actual
     </button>
+
+    <div id="mensaje"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
     <script>
+        // Mostrar mensajes en el centro del mapa
+        function mostrarMensaje(texto) {
+            const elemento = document.getElementById('mensaje');
+
+            elemento.textContent = texto;
+            elemento.style.display = 'block';
+        }
+
         // Vista inicial: Monterrey
         const mapa = L.map('mapa', {
             zoomAnimation: false,
@@ -59,7 +84,7 @@
             markerZoomAnimation: false
         }).setView([25.6866, -100.3161], 15);
 
-        // Contadores para diagnosticar la carga de mosaicos
+        // Contadores para diagnosticar los mosaicos
         let mosaicosCargados = 0;
         let mosaicosFallidos = 0;
 
@@ -87,7 +112,7 @@
                 ' | Fallidos: ' + mosaicosFallidos;
         }
 
-        // Registrar mosaicos cargados correctamente
+        // Registrar mosaicos cargados
         capaMapa.on('tileload', function() {
             mosaicosCargados++;
             actualizarDiagnostico();
@@ -105,7 +130,7 @@
             actualizarDiagnostico();
         });
 
-        // Recalcular el tamaño al terminar la carga inicial
+        // Recalcular el tamaño tras cargar la capa
         capaMapa.once('load', function() {
             setTimeout(() => {
                 mapa.invalidateSize(true);
@@ -124,6 +149,9 @@
 
         // Seleccionar ubicación haciendo clic en el mapa
         mapa.on('click', function(evento) {
+            const latitud = evento.latlng.lat;
+            const longitud = evento.latlng.lng;
+
             if (marcador !== null) {
                 marcador.setLatLng(evento.latlng);
             } else {
@@ -134,21 +162,34 @@
                 'Latitud: ' + latitud.toFixed(6) +
                 '<br>Longitud: ' + longitud.toFixed(6)
             ).openPopup();
-
-            // Más adelante conectaremos estos valores con Java.
         });
 
-        // Obtener la ubicación actual del dispositivo
+        // Obtener ubicación actual
         function obtenerUbicacion() {
-            alert("Geolocation: " + !!navigator.geolocation);
-            alert("Secure context: " + window.isSecureContext);
-                        
-            if (!navigator.geolocation) {
-                alert(
-                    'La geolocalización no está disponible en este navegador.'
+            // Comprobar que el botón ejecuta la función
+            mostrarMensaje('El botón funciona. Comprobando geolocalización...');
+
+            const disponible = !!navigator.geolocation;
+            const contextoSeguro = window.isSecureContext;
+
+            console.log('Geolocation disponible:', disponible);
+            console.log('Contexto seguro:', contextoSeguro);
+
+            if (!disponible) {
+                mostrarMensaje(
+                    'La API de geolocalización no está disponible en este WebView.'
                 );
                 return;
             }
+
+            if (!contextoSeguro) {
+                mostrarMensaje(
+                    'La página no está en un contexto seguro. Se requiere HTTPS para la geolocalización.'
+                );
+                return;
+            }
+
+            mostrarMensaje('Solicitando ubicación...');
 
             navigator.geolocation.getCurrentPosition(
                 function(posicion) {
@@ -158,24 +199,30 @@
                     // Centrar el mapa en la ubicación obtenida
                     mapa.setView([lat, lon], 16);
 
-                    // Crear o actualizar el marcador existente
+                    // Crear o actualizar el marcador
                     if (marcador !== null) {
                         marcador.setLatLng([lat, lon]);
                     } else {
                         marcador = L.marker([lat, lon]).addTo(mapa);
                     }
 
-                    // Mostrar coordenadas
+                    // Mostrar coordenadas en el marcador
                     marcador.bindPopup(
                         'Mi ubicación actual<br>' +
                         'Latitud: ' + lat.toFixed(6) +
                         '<br>Longitud: ' + lon.toFixed(6)
                     ).openPopup();
 
-                    // Recalcular el tamaño después de centrar
+                    // Recalcular el tamaño del mapa
                     setTimeout(() => {
                         mapa.invalidateSize(true);
                     }, 500);
+
+                    mostrarMensaje(
+                        'Ubicación obtenida correctamente.\n' +
+                        'Latitud: ' + lat.toFixed(6) + '\n' +
+                        'Longitud: ' + lon.toFixed(6)
+                    );
                 },
 
                 function(error) {
@@ -198,8 +245,12 @@
                             mensaje = 'Ocurrió un error al obtener la ubicación.';
                     }
 
-                    alert(mensaje);
-                    console.error('Error de geolocalización:', error);
+                    mostrarMensaje(mensaje);
+                    console.error(
+                        'Error de geolocalización:',
+                        error.code,
+                        error.message
+                    );
                 },
 
                 {
