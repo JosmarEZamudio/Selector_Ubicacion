@@ -212,6 +212,16 @@
                     );
                 },
 
+                function actualizarUbicacion(latitud, longitud) {
+                    mapa.setView([latitud, longitud], 17);
+                
+                    if (marcador) {
+                        marcador.setLatLng([latitud, longitud]);
+                    } else {
+                        marcador = L.marker([latitud, longitud]).addTo(mapa);
+                    }
+                }
+
                 function(error) {
                     let mensaje;
 
