@@ -96,7 +96,9 @@
 
         // Marcador seleccionado
         var marcador = null;
-
+        var latitudSeleccionada = null;
+        var longitudSeleccionada = null;
+        
         // Capa de OpenStreetMap
         const capaMapa = L.tileLayer(
             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -152,6 +154,9 @@
         mapa.on('click', function(evento) {
             const latitud = evento.latlng.lat;
             const longitud = evento.latlng.lng;
+
+            latitudSeleccionada = latitud;
+            longitudSeleccionada = longitud;
 
             if (marcador !== null) {
                 marcador.setLatLng(evento.latlng);
@@ -253,6 +258,8 @@
         }
 
        function actualizarUbicacion(latitud, longitud) {
+                latitudSeleccionada = latitud;
+                longitudSeleccionada = longitud;
                 mapa.setView([latitud, longitud], 17);
             
                 if (marcador) {
