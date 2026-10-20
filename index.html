@@ -123,5 +123,43 @@
         });
 
     </script>
+
+    <button onclick="obtenerUbicacion()">
+    Usar mi ubicación actual
+</button>
+
+<script>
+function obtenerUbicacion() {
+    if (!navigator.geolocation) {
+        alert("La geolocalización no está disponible.");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(posicion) {
+            const lat = posicion.coords.latitude;
+            const lon = posicion.coords.longitude;
+
+            map.setView([lat, lon], 16);
+
+            L.marker([lat, lon])
+                .addTo(map)
+                .bindPopup(
+                    "Mi ubicación<br>" +
+                    "Latitud: " + lat + "<br>" +
+                    "Longitud: " + lon
+                )
+                .openPopup();
+        },
+        function(error) {
+            alert("No se pudo obtener la ubicación: " + error.message);
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000
+        }
+    );
+}
+</script>
 </body>
 </html>
