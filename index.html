@@ -84,7 +84,7 @@
         }
 
         // Vista inicial: Monterrey
-        const mapa = L.map('mapa', {
+        var mapa = L.map('mapa', {
             zoomAnimation: false,
             fadeAnimation: false,
             markerZoomAnimation: false
@@ -95,7 +95,7 @@
         let mosaicosFallidos = 0;
 
         // Marcador seleccionado
-        let marcador = null;
+        var marcador = null;
 
         // Capa de OpenStreetMap
         const capaMapa = L.tileLayer(
